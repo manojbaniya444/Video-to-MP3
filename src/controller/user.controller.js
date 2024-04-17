@@ -26,7 +26,7 @@ const loginUser = async (req, res) => {
 
   // generate jwt token
   const token = jwt.sign(
-    { username: existingUser.usernamem, id: existingUser._id },
+    { username: existingUser.username, id: existingUser._id },
     "ssshhh",
     {
       expiresIn: "3d",
@@ -34,11 +34,7 @@ const loginUser = async (req, res) => {
   );
 
   // set the cookies
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  });
+  res.setHeader("Set-Cookie", `token=${token}; Path=/;`);
 
   // set the user in the request object
   req.user = existingUser;

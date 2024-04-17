@@ -30,7 +30,7 @@ const videoSchema = new mongoose.Schema({
   },
   extractedAudio: {
     type: Boolean,
-    default: False,
+    default: false,
   },
   resizes: [
     {
@@ -40,7 +40,7 @@ const videoSchema = new mongoose.Schema({
         processing: {
           type: Boolean,
           required: true,
-          default: False,
+          default: false,
         },
       },
     },
