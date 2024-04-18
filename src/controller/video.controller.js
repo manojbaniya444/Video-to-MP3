@@ -21,7 +21,7 @@ const uploadVideoController = async (req, res) => {
       .send("Unsupported file format please upload mp4 or mov");
   }
 
-    // console.log(fileName, extension, name);
+  // console.log(fileName, extension, name);
 
   // File storage structure : storage > unique_vid -> original.mp4, thumbnail.jpg, audio.aac, 320x150.mp4, ...
 
@@ -51,7 +51,6 @@ const uploadVideoController = async (req, res) => {
     // get dimensions of the video file : width, height
     const dimensions = await FFMPEG.getDimensions(fullPath);
 
-
     const video = new Video({
       videoId,
       name,
@@ -61,8 +60,8 @@ const uploadVideoController = async (req, res) => {
       extractedAudio: false,
       resizes: [],
     });
-    
-    // await video.save();
+
+    await video.save();
     return res.status(200).send("File uploaded successfully");
   } catch (error) {
     // if the error is because the folder does not exist
@@ -85,4 +84,13 @@ const uploadVideoController = async (req, res) => {
   }
 };
 
-module.exports = { uploadVideoController };
+const getVideos = async (req, res) => {
+  const videos = await Video.find({ user: req?.user.id })
+    .populate("user", "-password")
+
+  return res
+    .status(200)
+    .json({ message: "Videos fetched successfully", videos });
+};
+
+module.exports = { uploadVideoController, getVideos };
