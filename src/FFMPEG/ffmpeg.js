@@ -70,4 +70,30 @@ const getDimensions = async (fullPath) => {
   });
 };
 
-module.exports = { makeThumbnail, getDimensions };
+const extractAudio = async (fullPath, audioPath) => {
+  // ffmpeg -i video.mov -vn -c:a copy audio.aac
+  return new Promise((resolve, reject) => {
+    const ffmpeg = spawn("ffmpeg", [
+      "-i",
+      fullPath,
+      "-vn",
+      "-c:a",
+      "copy",
+      audioPath,
+    ]);
+
+    ffmpeg.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(`FFMPEG exited with code ${code}`);
+      }
+    });
+
+    ffmpeg.on("error", (error) => {
+      reject(error);
+    });
+  });
+};
+
+module.exports = { makeThumbnail, getDimensions, extractAudio };

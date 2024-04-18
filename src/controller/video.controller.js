@@ -5,6 +5,7 @@ const { deleteFolder, deleteFile } = require("../utils");
 const { pipeline } = require("node:stream/promises");
 const Video = require("../model/video.schema");
 const FFMPEG = require("../FFMPEG/ffmpeg");
+const mongoose = require("mongoose");
 
 const uploadVideoController = async (req, res) => {
   const fileName = req.headers.filename || "untitled";
@@ -85,12 +86,128 @@ const uploadVideoController = async (req, res) => {
 };
 
 const getVideos = async (req, res) => {
-  const videos = await Video.find({ user: req?.user.id })
-    .populate("user", "-password")
+  const videos = await Video.find({ user: req?.user.id }).populate(
+    "user",
+    "-password"
+  );
 
   return res
     .status(200)
     .json({ message: "Videos fetched successfully", videos });
 };
 
-module.exports = { uploadVideoController, getVideos };
+const getVideoAsset = async (req, res) => {
+  const videoId = req.params.videoId;
+  const type = req.query.type;
+
+  // check if the videoId is of mongoose objectId type
+  if (mongoose.Types.ObjectId.isValid(videoId) === false) {
+    return res.status(400).send("Invalid videoId");
+  }
+
+  const video = await Video.findById(videoId);
+
+  if (!video) {
+    return res.status(404).send("Video not found");
+  }
+
+  let file;
+  let mimeType;
+  let filename;
+
+  switch (type) {
+    case "thumbnail":
+      file = await fs.open(`./src/storage/${video.videoId}/thumbnail.jpg`, "r");
+      mimeType = "image/jpeg";
+      break;
+
+    case "audio":
+      file = await fs.open(`./src/storage/${video.videoId}/audio.aac`, "r");
+      mimeType = "audio/aac";
+      filename = `${video.name}-audio.aac`;
+      break;
+
+    case "resize":
+      const dimensions = req.query.dimensions;
+      file = await fs.open(
+        `./src/storage/${video.videoId}/${dimensions}.${video.extension}`,
+        "r"
+      );
+      mimeType = `video/${video.extension}`;
+      filename = `${video.name}-${dimensions}.${video.extension}`;
+      break;
+
+    case "original":
+      file = await fs.open(
+        `./src/storage/${video.videoId}/original.${video.extension}`,
+        "r"
+      );
+      mimeType = `video/${video.extension}`;
+      filename = `${video.name}.${video.extension}`;
+      break;
+    default:
+      return res.status(400).send("Invalid request check the query params");
+      break;
+  }
+  try {
+    // grab the file size
+    const stat = await file.stat();
+
+    const fileStream = file.createReadStream();
+
+    res.setHeader("Content-Type", mimeType);
+    res.setHeader("Content-Length", stat.size);
+
+    // header to trigger download
+    if (type !== "thumbnail") {
+      res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+    }
+    res.status(200);
+    await pipeline(fileStream, res);
+    file.close();
+  } catch (error) {
+    console.log("Error on getting video asset", error);
+    return res.status(500).send("Failed to get the video asset");
+  }
+};
+
+const extractAudio = async (req, res) => {
+  const videoId = req.params.videoId;
+
+  // check if the videoId is of mongoose objectId type
+  if (mongoose.Types.ObjectId.isValid(videoId) === false) {
+    return res.status(400).send("Invalid videoId");
+  }
+
+  const video = await Video.findById(videoId);
+
+  if (!video) {
+    return res.status(404).send("Video not found");
+  }
+
+  if (video.extractedAudio) {
+    return res.status(400).json({ message: "Audio already extracted" });
+  }
+
+  const originalFilePath = `./src/storage/${video.videoId}/original.${video.extension}`;
+  const audioPath = `./src/storage/${video.videoId}/audio.aac`;
+
+  try {
+    await FFMPEG.extractAudio(originalFilePath, audioPath);
+
+    video.extractedAudio = true;
+    await video.save();
+    return res.status(200).json({ message: "Audio extracted successfully." });
+  } catch (error) {
+    console.log("Error on extracting audio", error);
+    deleteFile(audioPath);
+    return res.status(500).send("Failed to extract audio");
+  }
+};
+
+module.exports = {
+  uploadVideoController,
+  getVideos,
+  getVideoAsset,
+  extractAudio,
+};
