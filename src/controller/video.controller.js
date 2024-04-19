@@ -6,6 +6,9 @@ const { pipeline } = require("node:stream/promises");
 const Video = require("../model/video.schema");
 const FFMPEG = require("../FFMPEG/ffmpeg");
 const mongoose = require("mongoose");
+const { JobQueue } = require("../lib/jobQueue");
+
+const jobs = new JobQueue();
 
 const uploadVideoController = async (req, res) => {
   const fileName = req.headers.filename || "untitled";
@@ -240,26 +243,17 @@ const resizeVideo = async (req, res) => {
   video.resizes.push({ dimensions: `${width}x${height}`, processing: true });
   await video.save();
 
-  const originalVideoPath = `./src/storage/${video.videoId}/original.${video.extension}`;
-  const targetPath = `./src/storage/${video.videoId}/${width}x${height}.${video.extension}`;
+  //? Schedule the job
+  jobs.enqueue({
+    type: "resize",
+    video,
+    width,
+    height,
+  });
 
-  try {
-    await FFMPEG.resize(originalVideoPath, targetPath, width, height);
-
-    const resizeIndex = video.resizes.findIndex(
-      (resize) => resize.dimensions === `${width}x${height}`
-    );
-    if (resizeIndex !== -1) {
-      video.resizes[resizeIndex].processing = false;
-      await video.save();
-    }
-
-    res.status(200).json({ message: "Video successfully resized." });
-  } catch (error) {
-    console.log("Error on resizing video", error);
-    deleteFile(targetPath);
-    return res.status(500).send("Failed to resize the video");
-  }
+  return res
+    .status(200)
+    .json({ message: "Video scheduled to resize check later." });
 };
 
 module.exports = {
