@@ -96,4 +96,31 @@ const extractAudio = async (fullPath, audioPath) => {
   });
 };
 
-module.exports = { makeThumbnail, getDimensions, extractAudio };
+const resize = async (fullPath, targetPath, width, height) => {
+  // ffmpeg -i .\src\storage\df713e0e\original.mp4 -vf scale=320:240 -c:a copy video-320x240.mp4
+  return new Promise((resolve, reject) => {
+    const ffmpeg = spawn("ffmpeg", [
+      "-i",
+      fullPath,
+      "-vf",
+      `scale=${width}:${height}`,
+      "-c:a",
+      "copy",
+      targetPath,
+    ]);
+
+    ffmpeg.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(`FFMPEG exited with code ${code}`);
+      }
+    });
+
+    ffmpeg.on("error", (error) => {
+      reject(error);
+    });
+  });
+};
+
+module.exports = { makeThumbnail, getDimensions, extractAudio, resize };

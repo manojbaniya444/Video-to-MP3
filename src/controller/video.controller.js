@@ -205,9 +205,67 @@ const extractAudio = async (req, res) => {
   }
 };
 
+const resizeVideo = async (req, res) => {
+  const videoId = req.body.videoId;
+  const width = Number(req.body.width);
+  const height = Number(req.body.height);
+
+  if (mongoose.Types.ObjectId.isValid(videoId) === false) {
+    return res.status(400).send("Invalid videoId");
+  }
+
+  const video = await Video.findById(videoId);
+
+  if (!video) {
+    return res.status(404).send("Video not found");
+  }
+
+  // check if the video is already resized
+  const resizedVideoIndex = video.resizes.findIndex((resizeSize) => {
+    return resizeSize.dimensions === `${width}x${height}`;
+  });
+
+  if (resizedVideoIndex !== -1) {
+    if (video.resizes[resizedVideoIndex].processing) {
+      return res
+        .status(200)
+        .json({ message: "Video is processing", isResized: false });
+    } else {
+      return res
+        .status(200)
+        .json({ message: "Video already resized", isResized: true });
+    }
+  }
+
+  video.resizes.push({ dimensions: `${width}x${height}`, processing: true });
+  await video.save();
+
+  const originalVideoPath = `./src/storage/${video.videoId}/original.${video.extension}`;
+  const targetPath = `./src/storage/${video.videoId}/${width}x${height}.${video.extension}`;
+
+  try {
+    await FFMPEG.resize(originalVideoPath, targetPath, width, height);
+
+    const resizeIndex = video.resizes.findIndex(
+      (resize) => resize.dimensions === `${width}x${height}`
+    );
+    if (resizeIndex !== -1) {
+      video.resizes[resizeIndex].processing = false;
+      await video.save();
+    }
+
+    res.status(200).json({ message: "Video successfully resized." });
+  } catch (error) {
+    console.log("Error on resizing video", error);
+    deleteFile(targetPath);
+    return res.status(500).send("Failed to resize the video");
+  }
+};
+
 module.exports = {
   uploadVideoController,
   getVideos,
   getVideoAsset,
   extractAudio,
+  resizeVideo,
 };

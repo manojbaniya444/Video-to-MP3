@@ -34,14 +34,13 @@ const videoSchema = new mongoose.Schema({
   },
   resizes: [
     {
-      resizeSize: {
+      dimensions: {
         type: String,
         required: true,
-        processing: {
-          type: Boolean,
-          required: true,
-          default: false,
-        },
+      },
+      processing: {
+        type: Boolean,
+        default: false,
       },
     },
   ],
