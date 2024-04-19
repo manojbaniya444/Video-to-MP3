@@ -4,7 +4,8 @@
   "description": "Node js app to manipulate video",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon ./src/index.js"
+    "dev": "nodemon ./src/index.js",
+    "cluster": "nodemon ./src/lib/cluster.js"
   },
   "author": "Manoj Baniya",
   "license": "ISC",
