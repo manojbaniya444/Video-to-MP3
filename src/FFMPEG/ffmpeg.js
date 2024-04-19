@@ -106,6 +106,7 @@ const resize = async (fullPath, targetPath, width, height) => {
       `scale=${width}:${height}`,
       "-c:a",
       "copy",
+      "-y", // overwrite existing file
       targetPath,
     ]);
 

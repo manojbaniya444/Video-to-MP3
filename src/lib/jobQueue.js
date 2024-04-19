@@ -6,9 +6,34 @@ class JobQueue {
   constructor() {
     this.jobs = [];
     this.currentJob = null;
+
+    (async () => {
+      const videos = await Video.find({
+        "resizes.processing": true,
+      });
+
+      // console.log(videos);
+
+      if (videos.length > 0) {
+        videos.forEach((video) => {
+          video.resizes.forEach((resizes) => {
+            if (resizes.processing) {
+              this.enqueue({
+                type: "resize",
+                video,
+                width: resizes.dimensions.split("x")[0],
+                height: resizes.dimensions.split("x")[1],
+              });
+              // console.log("Enqueued job for video: ", video._id, resizes.dimensions)
+            }
+          });
+        });
+      }
+    })();
   }
 
   enqueue(job) {
+    // console.log("Enqueued job: ", job)
     this.jobs.push(job);
     this.executeNext();
   }
@@ -22,6 +47,7 @@ class JobQueue {
     this.currentJob = this.dequeue();
     if (!this.currentJob) return;
     this.execute(this.currentJob);
+    // console.log("Executing job: ", this.currentJob)
   }
 
   async execute(job) {
