@@ -1,0 +1,17 @@
+.nav__nav {
+  background-color: rgb(233, 228, 228);
+}
+
+.nav__div {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  align-items: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.nav__div__logo {
+  font-size: 1.7rem;
+  font-weight: 900;
+}

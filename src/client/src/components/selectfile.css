@@ -1,0 +1,15 @@
+.selectfile__section__choosefile {
+}
+.selectfile__section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  border: 1px solid gray;
+  margin-top: 20px;
+  padding: 30px;
+}
+
+.selectfile__section__choosefile__label {
+  display: inline;
+}
