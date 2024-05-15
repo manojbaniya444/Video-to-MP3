@@ -55,6 +55,7 @@ const login: React.FC = () => {
             name="username"
             onChange={handleInputChange}
             required
+            className="input"
           />
         </div>
 
@@ -66,10 +67,11 @@ const login: React.FC = () => {
             name="password"
             onChange={handleInputChange}
             required
+            className="input"
           />
         </div>
 
-        <button>Login</button>
+        <button className="button">Login</button>
         <div>
           <p>
             Don't have an account? <Link to="/register">Register</Link>

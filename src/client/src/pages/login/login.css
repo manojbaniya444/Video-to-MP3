@@ -11,7 +11,7 @@ form {
 label {
   display: block;
 }
-input {
+.input {
   padding: 10px;
   margin-top: 10px;
   min-width: 400px;
@@ -27,7 +27,7 @@ input {
   gap: 20px;
 }
 
-button {
+.button {
   padding: 10px 20px;
   cursor: pointer;
 }

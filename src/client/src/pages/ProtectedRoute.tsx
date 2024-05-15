@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [auth, setAuth] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(true);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -13,25 +14,32 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         });
         const responseParse = await response.json();
 
-        console.log(responseParse);
+        setLoading(false);
 
-        if (responseParse.auth) {
+        if (response.ok && responseParse.auth) {
           setAuth(true);
         } else {
           setAuth(false);
         }
       } catch (error) {
+        console.log("Auth error: ", error);
         setAuth(false);
+        setLoading(false);
       }
     };
 
     checkAuth();
   }, []);
-  if (auth) {
-    return children;
-  } else {
-    return <Navigate to="/login" />;
+
+  if (loading) {
+    return (
+      <div>
+        <h1>Authenticating...</h1>
+      </div>
+    );
   }
+
+  return auth ? children : <Navigate to="/login" />;
 };
 
 export default ProtectedRoute;

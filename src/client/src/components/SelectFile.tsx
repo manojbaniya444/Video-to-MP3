@@ -32,7 +32,7 @@ const SelectFile: React.FC = () => {
           <div className="selectfile__section__choosefile__fileinfo">
             <p>File name: {filename}</p>
             <p>
-              File size:{" "}
+              File Extension:{" "}
               <span
                 style={{
                   backgroundColor: "green",

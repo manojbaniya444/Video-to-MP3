@@ -7,21 +7,25 @@ const loginUser = async (req, res) => {
 
   // check if the username and password are provided
   if (!username || !password) {
-    return res.status(400).send("Please provide username and password.");
+    return res.status(400).json({
+      message: "Please provide username and password both.",
+    });
   }
 
   // check if the user exists
   const existingUser = await User.findOne({ username });
 
   if (!existingUser) {
-    return res.status(400).send("User with username does not exists.");
+    return res.status(400).json({
+      message: "User does not exist. Please register first.",
+    });
   }
 
   // check if the password is correct
   const isValidPassword = await bcrypt.compare(password, existingUser.password);
 
   if (!isValidPassword) {
-    return res.status(400).send("Invalid password.");
+    return res.status(400).json({ message: "Invalid password." });
   }
 
   // generate jwt token
@@ -45,18 +49,30 @@ const loginUser = async (req, res) => {
   // generate token and further actions here.
 };
 
+const logoutUser = async (req, res) => {
+  res.setHeader(
+    "Set-Cookie",
+    `token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;`
+  );
+  return res.status(200).json({ message: "User logged out successfully." });
+};
+
 const registerUser = async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).send("Please provide username and password.");
+    return res.status(400).json({
+      message: "Please provide username and password both.",
+    });
   }
 
   // check if the user exists
   const existingUser = await User.findOne({ username });
 
   if (existingUser) {
-    return res.status(400).send("User already exists.");
+    return res.status(400).json({
+      message: "Username already exists. Please try with different username.",
+    });
   }
 
   try {
@@ -70,7 +86,29 @@ const registerUser = async (req, res) => {
   }
 };
 
+const checkAuth = async (req, res) => {
+  if (!req.headers.cookie) {
+    return res.status(401).json({ auth: false, message: "No headers cookie" });
+  }
+
+  const token = req.headers.cookie.split("=")[1];
+
+  if (!token) {
+    return res.status(401).json({ auth: false, message: "No token" });
+  }
+
+  const decoded = await jwt.verify(token, "ssshhh");
+  if (!decoded) {
+    return res.status(401).json({ auth: false, message: "Invalid token" });
+  }
+
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+  return res.status(200).json({ auth: true, message: "auth" });
+};
+
 module.exports = {
   loginUser,
   registerUser,
+  checkAuth,
+  logoutUser,
 };

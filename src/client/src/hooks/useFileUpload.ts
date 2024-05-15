@@ -15,7 +15,10 @@ const useFileInfo: any = () => {
     }
 
     const fullname = e.target.files?.[0].name;
-    const [name, extension] = fullname?.split(".") || [null, null]; // Add null check before splitting the string
+    console.log(fullname);
+    const name = fullname?.substring(0, fullname.lastIndexOf(".")) || null;
+    const extension =
+      fullname?.substring(fullname.lastIndexOf(".") + 1) || null;
     setFilename(name);
     setFileExtension(extension);
   };
@@ -29,6 +32,7 @@ const useFileInfo: any = () => {
     }
     try {
       setLoading(true);
+      console.log(name, ext);
       const response = await uploadVideo(`${name}.${ext}`, file);
 
       console.log(response);

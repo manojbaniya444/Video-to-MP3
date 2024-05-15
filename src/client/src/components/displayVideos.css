@@ -1,0 +1,36 @@
+.displayvideo__videodetail {
+  display: flex;
+  background-color: rgb(219, 219, 219);
+  width: 100%;
+  max-width: 1200px;
+  gap: 1rem;
+  padding: 20px;
+  justify-content: start;
+  align-items: center;
+}
+
+.displayvideo__videodetail__extension {
+    background-color: rgb(44, 142, 44);
+    color: white;
+    padding: 2px;
+}
+
+.displayvideo__container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.video__resize {
+    display: flex;
+    flex-direction: column;
+}
+
+.video__detail__info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}

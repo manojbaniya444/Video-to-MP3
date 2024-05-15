@@ -1,8 +1,21 @@
-import React from "react";
 import "./navigation.css";
+import { useNavigate } from "react-router-dom";
 
 const Navigation = () => {
   const isLoggedIn = true;
+  const navigate = useNavigate();
+
+  const logoutHandler = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/user/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      navigate("/login");
+    } catch (error) {
+      console.log("Logout Error: ", error);
+    }
+  };
 
   return (
     <nav className="nav__nav">
@@ -21,7 +34,10 @@ const Navigation = () => {
               </li>
             </ul>
           ) : (
-            <p>Welcome</p>
+            <div>
+              <p>Welcome</p>
+              <button onClick={logoutHandler}>Logout</button>
+            </div>
           )}
         </div>
       </div>

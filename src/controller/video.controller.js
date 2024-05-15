@@ -12,6 +12,7 @@ const jobs = new JobQueue();
 
 const uploadVideoController = async (req, res) => {
   const fileName = req.headers.filename || "untitled";
+  console.log(fileName);
   const extension = path.extname(fileName).substring(1).toLowerCase();
   const name = path.parse(fileName).name;
 
@@ -20,9 +21,7 @@ const uploadVideoController = async (req, res) => {
   // check if the format is supported or not
   if (FORMATS_SUPPORTED.indexOf(extension) === -1) {
     console.log("Unsupported file format", extension);
-    return res
-      .status(400)
-      .send("Unsupported file format please upload mp4 or mov");
+    return res.status(400).json({ message: "Unsupported file format" });
   }
 
   // console.log(fileName, extension, name);
@@ -66,7 +65,9 @@ const uploadVideoController = async (req, res) => {
     });
 
     await video.save();
-    return res.status(200).send("File uploaded successfully");
+    return res.status(200).json({
+      message: "File uploaded successfully",
+    });
   } catch (error) {
     // if the error is because the folder does not exist
     console.log("Error on uploading file", error);
@@ -74,7 +75,7 @@ const uploadVideoController = async (req, res) => {
     if (error.code === "ENOENT") {
       return res
         .status(500)
-        .send("Failed to upload the file. No such folder to upload");
+        .json({ message: "Failed to upload file. Please try again." });
     }
 
     // if the error is on pipelining i.e user cancels the upload process
@@ -105,7 +106,9 @@ const getVideoAsset = async (req, res) => {
 
   // check if the videoId is of mongoose objectId type
   if (mongoose.Types.ObjectId.isValid(videoId) === false) {
-    return res.status(400).send("Invalid videoId");
+    return res.status(400).json({
+      message: "Invalid videoId",
+    });
   }
 
   const video = await Video.findById(videoId);
@@ -164,13 +167,14 @@ const getVideoAsset = async (req, res) => {
     // header to trigger download
     if (type !== "thumbnail") {
       res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+      res.setHeader("file-name", filename);
     }
     res.status(200);
     await pipeline(fileStream, res);
     file.close();
   } catch (error) {
     console.log("Error on getting video asset", error);
-    return res.status(500).send("Failed to get the video asset");
+    return res.status(500).json({ message: "Fail to get video asset" });
   }
 };
 
@@ -179,13 +183,17 @@ const extractAudio = async (req, res) => {
 
   // check if the videoId is of mongoose objectId type
   if (mongoose.Types.ObjectId.isValid(videoId) === false) {
-    return res.status(400).send("Invalid videoId");
+    return res.status(400).json({
+      message: "Invalid video id",
+    });
   }
 
   const video = await Video.findById(videoId);
 
   if (!video) {
-    return res.status(404).send("Video not found");
+    return res.status(404).json({
+      message: "Video not found.",
+    });
   }
 
   if (video.extractedAudio) {
@@ -204,7 +212,9 @@ const extractAudio = async (req, res) => {
   } catch (error) {
     console.log("Error on extracting audio", error);
     deleteFile(audioPath);
-    return res.status(500).send("Failed to extract audio");
+    return res.status(500).json({
+      message: "Failed to extract audio.",
+    });
   }
 };
 
@@ -214,7 +224,9 @@ const resizeVideo = async (req, res) => {
   const height = Number(req.body.height);
 
   if (mongoose.Types.ObjectId.isValid(videoId) === false) {
-    return res.status(400).send("Invalid videoId");
+    return res.status(400).json({
+      message: "Invalid video id",
+    });
   }
 
   const video = await Video.findById(videoId);
