@@ -34,3 +34,11 @@
     align-items: center;
     gap: 20px;
 }
+
+.displayvideo__videodetail__resolution {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}

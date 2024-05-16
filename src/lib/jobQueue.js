@@ -59,11 +59,17 @@ class JobQueue {
 
       try {
         await FFMPEG.resize(originalVideoPath, targetPath, width, height);
-        await Video.findByIdAndUpdate(video._id, {
-          $set: {
-            resizes: { dimensions: `${width}x${height}`, processing: false },
+        await Video.findByIdAndUpdate(
+          video._id,
+          {
+            $set: {
+              "resizes.$[elem].processing": false,
+            },
           },
-        });
+          {
+            arrayFilters: [{ "elem.dimensions": `${width}x${height}` }],
+          }
+        );
         console.log(
           "Video resized successfully. Now remaining jobs are: ",
           this.jobs.length
