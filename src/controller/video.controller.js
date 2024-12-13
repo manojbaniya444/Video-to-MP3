@@ -34,10 +34,10 @@ const uploadVideoController = async (req, res) => {
 
   try {
     // make the directory to store the file
-    await fs.mkdir(`./src/storage/${videoId}`);
+    await fs.mkdir(`./storage/${videoId}`);
 
-    const fullPath = `./src/storage/${videoId}/original.${extension}`;
-    const thumbnailPath = `./src/storage/${videoId}/thumbnail.jpg`;
+    const fullPath = `./storage/${videoId}/original.${extension}`;
+    const thumbnailPath = `./storage/${videoId}/thumbnail.jpg`;
 
     const file = await fs.open(fullPath, "w");
     const fileStream = file.createWriteStream();
@@ -123,12 +123,12 @@ const getVideoAsset = async (req, res) => {
 
   switch (type) {
     case "thumbnail":
-      file = await fs.open(`./src/storage/${video.videoId}/thumbnail.jpg`, "r");
+      file = await fs.open(`./storage/${video.videoId}/thumbnail.jpg`, "r");
       mimeType = "image/jpeg";
       break;
 
     case "audio":
-      file = await fs.open(`./src/storage/${video.videoId}/audio.aac`, "r");
+      file = await fs.open(`./storage/${video.videoId}/audio.aac`, "r");
       mimeType = "audio/aac";
       filename = `${video.name}-audio.aac`;
       break;
@@ -136,7 +136,7 @@ const getVideoAsset = async (req, res) => {
     case "resize":
       const dimensions = req.query.dimensions;
       file = await fs.open(
-        `./src/storage/${video.videoId}/${dimensions}.${video.extension}`,
+        `./storage/${video.videoId}/${dimensions}.${video.extension}`,
         "r"
       );
       mimeType = `video/${video.extension}`;
@@ -145,7 +145,7 @@ const getVideoAsset = async (req, res) => {
 
     case "original":
       file = await fs.open(
-        `./src/storage/${video.videoId}/original.${video.extension}`,
+        `./storage/${video.videoId}/original.${video.extension}`,
         "r"
       );
       mimeType = `video/${video.extension}`;
@@ -174,7 +174,7 @@ const getVideoAsset = async (req, res) => {
     file.close();
   } catch (error) {
     console.log("Error on getting video asset", error);
-    return res.status(500).json({ message: "Fail to get video asset",error });
+    return res.status(500).json({ message: "Fail to get video asset", error });
   }
 };
 
@@ -200,8 +200,8 @@ const extractAudio = async (req, res) => {
     return res.status(400).json({ message: "Audio already extracted" });
   }
 
-  const originalFilePath = `./src/storage/${video.videoId}/original.${video.extension}`;
-  const audioPath = `./src/storage/${video.videoId}/audio.aac`;
+  const originalFilePath = `./storage/${video.videoId}/original.${video.extension}`;
+  const audioPath = `./storage/${video.videoId}/audio.aac`;
 
   try {
     await FFMPEG.extractAudio(originalFilePath, audioPath);

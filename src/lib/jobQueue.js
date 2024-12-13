@@ -54,8 +54,8 @@ class JobQueue {
     const { type, video, width, height } = job;
     // all ffmpeg logic goes here
     if (type === "resize") {
-      const originalVideoPath = `./src/storage/${video.videoId}/original.${video.extension}`;
-      const targetPath = `./src/storage/${video.videoId}/${width}x${height}.${video.extension}`;
+      const originalVideoPath = `./storage/${video.videoId}/original.${video.extension}`;
+      const targetPath = `./storage/${video.videoId}/${width}x${height}.${video.extension}`;
 
       try {
         await FFMPEG.resize(originalVideoPath, targetPath, width, height);
