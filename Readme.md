@@ -8,6 +8,7 @@ Extract audio from video, resize the video to different sizes.
 - Implementing Queue Based Processing to offload heavy task to Process
 - Cluster Module to Run Node on Multiple Instances
 - React Client for User Interface
+- Hands on FFMPEG
 
 Preview
 
