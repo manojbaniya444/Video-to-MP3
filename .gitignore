@@ -5,3 +5,4 @@
 *.jpeg
 node_modules/
 *.aac
+!media converter.png
